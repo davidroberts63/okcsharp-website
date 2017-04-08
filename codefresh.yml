@@ -3,6 +3,6 @@ steps:
     get_version:
         image: ruby:2.3.0
         commands:
-            ruby --version
-            pwd
-            ls
+          - ruby --version
+          - pwd
+          - ls
