@@ -1,7 +1,8 @@
 version: "1.0"
 steps:
     get_version:
-        image_name: ruby:2.3.0
+        image: ruby:2.3.0
         commands:
             ruby --version
             pwd
+            ls
