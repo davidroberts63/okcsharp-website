@@ -1,9 +1,11 @@
 from datetime import datetime, timedelta
 from pytz import timezone
+from shutil import copyfile
 import requests
 import json
 import time
 import pytz
+import os
 
 class Event(object):
     def __init__(self, id, name, time, duration, description, updated, venue_name, **kwargs):
@@ -33,6 +35,13 @@ class Event(object):
     def length(self):
         return timedelta(milliseconds=self.duration)
 
+    @property
+    def dictionary(self):
+        d = self.__dict__
+        d["when"] = self.when()
+        d["length"] = self.length()
+        return d
+
 def get_next_event(api_key, api_root, group_name):
     """Returns the next meetup event."""
     url = "{0}/{1}/events".format(api_root, group_name)
@@ -50,12 +59,43 @@ def get_next_event(api_key, api_root, group_name):
     event = Event(venue_name=data["venue"]["name"], **data)
     return event
 
-if __name__ == "__main__":
-    root = "https://api.meetup.com"
-    group = "OKC-sharp"
-    key = "64324f6535207f355a781133296f6a22"
-    zone = "US/Central"
-    next_event = get_next_event(key, root, group)
-    #print(next_event)
+def generate_post_filename(event, zone):
+    """Generates the filename for the event's post"""
+    return event.when(zone).strftime("%B-%Y-meetup.md")
 
-    print(next_event)
+def get_template_path(template_name):
+    """Get the path to the template file that will be copied"""
+    return os.path.join("./scaffolds", template_name + ".md")
+
+def generate_post(template, destination_folder, event, zone):
+    """Generates event post file"""
+
+    # Create initial post from template
+    file_name = generate_post_filename(event, zone)
+    full_file_name = destination_folder + "/" + file_name
+    copyfile(template, full_file_name)
+
+    # Process placeholders
+    content = ""
+    values = event.dictionary
+    with open(full_file_name, mode="r") as post_file:
+        for line in post_file:
+            content += line.format(**values)
+
+    # Saving processed content
+    with open(full_file_name, mode="w") as post_file:
+        for line in content:
+            post_file.write(line)
+
+if __name__ == "__main__":
+    MEETUP_ROOT = "https://api.meetup.com"
+    GROUP_NAME = "OKC-sharp"
+    MEETUP_APIKEY = "64324f6535207f355a781133296f6a22"
+    group_timezone = "US/Central"
+
+    next_event = get_next_event(MEETUP_APIKEY, MEETUP_ROOT, GROUP_NAME)
+    template_path = get_template_path("meetup")
+    generate_post(template_path, "source/_posts", next_event, timezone(group_timezone))
+
+    #print("Hello {when}".format(**next_event.dictionary))
+    #print(next_event.dictionary["when"])
