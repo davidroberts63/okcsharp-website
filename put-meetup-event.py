@@ -16,6 +16,8 @@ class Event(object):
         self.description = description
         self.updated = updated
         self.venue_name = venue_name
+        self.length = timedelta(milliseconds=self.duration)
+        self.set_timezone()
 
     def __repr__(self):
         return json.dumps(self.__dict__)
@@ -24,23 +26,12 @@ class Event(object):
         if zone is None:
             zone = pytz.utc
         utc = datetime.fromtimestamp(the_time)
-        return zone.localize(utc)
+        return utc.astimezone(zone)
 
-    def when(self, time_zone=None):
-        return self._localize(self.time, time_zone)
-
-    def modified(self, time_zone=None):
-        return self._localize(self.updated, time_zone)
-
-    def length(self):
-        return timedelta(milliseconds=self.duration)
-
-    @property
-    def dictionary(self):
-        d = self.__dict__
-        d["when"] = self.when()
-        d["length"] = self.length()
-        return d
+    def set_timezone(self, time_zone=None):
+        """Applies the given timezone to the datetime values of the event"""
+        self.when = self._localize(self.time, time_zone)
+        self.modified = self._localize(self.updated, time_zone)
 
 def get_next_event(api_key, api_root, group_name):
     """Returns the next meetup event."""
@@ -61,11 +52,20 @@ def get_next_event(api_key, api_root, group_name):
 
 def generate_post_filename(event, zone):
     """Generates the filename for the event's post"""
-    return event.when(zone).strftime("%B-%Y-meetup.md")
+    return event.when.strftime("%B-%Y-meetup.md").lower()
 
 def get_template_path(template_name):
     """Get the path to the template file that will be copied"""
     return os.path.join("./scaffolds", template_name + ".md")
+
+def process_placeholders(filename, event):
+    """Returns processing the placeholders in the filename with values from the event"""
+    content = ""
+    values = event.__dict__
+    with open(filename, mode="r") as post_file:
+        for line in post_file:
+            content += line.format(**values)
+    return content
 
 def generate_post(template, destination_folder, event, zone):
     """Generates event post file"""
@@ -75,12 +75,7 @@ def generate_post(template, destination_folder, event, zone):
     full_file_name = destination_folder + "/" + file_name
     copyfile(template, full_file_name)
 
-    # Process placeholders
-    content = ""
-    values = event.dictionary
-    with open(full_file_name, mode="r") as post_file:
-        for line in post_file:
-            content += line.format(**values)
+    content = process_placeholders(full_file_name, event)
 
     # Saving processed content
     with open(full_file_name, mode="w") as post_file:
@@ -94,8 +89,6 @@ if __name__ == "__main__":
     group_timezone = "US/Central"
 
     next_event = get_next_event(MEETUP_APIKEY, MEETUP_ROOT, GROUP_NAME)
+    next_event.set_timezone(timezone(group_timezone))
     template_path = get_template_path("meetup")
-    generate_post(template_path, "source/_posts", next_event, timezone(group_timezone))
-
-    #print("Hello {when}".format(**next_event.dictionary))
-    #print(next_event.dictionary["when"])
+    generate_post(template_path, "source/_posts", next_event, next_event)
