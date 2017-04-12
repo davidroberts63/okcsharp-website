@@ -2,7 +2,8 @@ from datetime import datetime, timedelta
 from pytz import timezone
 from shutil import copyfile
 from functools import reduce
-from subprocess import call
+from subprocess import run
+from subprocess import PIPE
 import requests
 import json
 import time
@@ -77,10 +78,23 @@ def get_git_url(config_filename, path_to_git_setting):
 
 def commit_post(filename, git_url, message="Auto commit by thePutter", branch_name="master"):
     """Stages, commits, and pushes the created post"""
-    call(["git", "remote", "add", "putter", git_url])
-    call(["git", "add", filename])
-    call(["git", "commit", "-m", message])
-    call(["git", "push", "putter", "HEAD:" + branch_name])
+    if did_post_change(filename):
+        print("Post changed: %s, pushing it." % filename)
+        run(["git", "remote", "add", "putter", git_url])
+        run(["git", "add", filename])
+        run(["git", "commit", "-m", message])
+        #run(["git", "push", "putter", "HEAD:" + branch_name])
+    else:
+        print("Post did NOT change: %s" % filename)
+
+def did_post_change(filename):
+    """Checks if the post filename changed or was created due to the generation process"""
+    status = run(["git", "status", "-s"], stdout=PIPE, universal_newlines=True).stdout
+    lines = status.split("\n")
+    if " M %s" % filename in lines or "?? %s" % filename in lines:
+        return True
+    else:
+        return False
 
 def generate_post(template, destination_folder, event):
     """Generates event post file"""
