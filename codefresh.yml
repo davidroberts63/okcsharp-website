@@ -1,8 +1,9 @@
 version: "1.0"
 steps:
     get_version:
-        image: ruby:2.3.0
+        image: python:latest
         commands:
-          - ruby --version
-          - pwd
-          - ls
+            - git config --global user.name "CodeFresh"
+            - git config --global user.email "noone@okcsharp.net"
+            - sed -i'' "s~https://github.com/techlahoma/okcsharp-website.git~https://${GH_TOKEN}:x-oauth-basic@github.com/davidroberts63/okcsharp-website.git~" _config.yml
+            - sed -i'' "s~PUT_KEY_HERE~${MEETUP_TOKEN}\~" thecodeputter.yml
