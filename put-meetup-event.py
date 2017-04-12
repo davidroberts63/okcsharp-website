@@ -80,7 +80,7 @@ def commit_post(filename, git_url, message="Auto commit by thePutter", branch_na
     call(["git", "remote", "add", "putter", git_url])
     call(["git", "add", filename])
     call(["git", "commit", "-m", message])
-    call(["git", "push", "putter", branch_name])
+    call(["git", "push", "putter"])
 
 def generate_post(template, destination_folder, event):
     """Generates event post file"""
