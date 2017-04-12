@@ -7,4 +7,5 @@ steps:
             - git config --global user.email "noone@okcsharp.net"
             - sed -i'' "s~https://github.com/techlahoma/okcsharp-website.git~https://${GH_TOKEN}:x-oauth-basic@github.com/davidroberts63/okcsharp-website.git~" _config.yml
             - sed -i'' "s~PUT_KEY_HERE~${MEETUP_TOKEN}~" thecodeputter.yml
+            - pip install -r pypackages.txt
             - python put-meetup-event.py
