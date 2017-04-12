@@ -12,7 +12,7 @@ steps:
         when:
             condition:
                 all:
-                    explicitlyRun: "'${{CF_BUILD_TRIGGER}}' == 'webhook'"
+                    explicitlyRun: "'${{CF_BUILD_TRIGGER}}' == 'build'"
     deploy_site:
         image: node:latest
         commands:
