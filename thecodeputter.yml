@@ -8,7 +8,7 @@ posts_path: "source/_posts"
 
 # Config for committing new post to the repo and pushing.
 #
-posts_branch: "master"
+posts_branch: "CodeFreshConfig"
 # Where to get the git url to push to.
 yaml_filename: "_config.yml"
 yaml_query: "deploy/repository"
