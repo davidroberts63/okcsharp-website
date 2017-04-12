@@ -1,15 +1,20 @@
+"""
+theCodePutter
+
+Puts the code he findses on meetup.
+"""
+
+import os
+import json
 from datetime import datetime, timedelta
-from pytz import timezone
 from shutil import copyfile
-from functools import reduce
 from subprocess import run
 from subprocess import PIPE
-import requests
-import json
-import time
+from functools import reduce
+from pytz import timezone
 import pytz
-import os
 import reyaml
+import requests
 
 class Event(object):
     """Represents the MeetUp event"""
