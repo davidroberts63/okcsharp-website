@@ -12,8 +12,9 @@ import os
 import reyaml
 
 class Event(object):
+    """Represents the MeetUp event"""
     def __init__(self, id, name, time, duration, description, updated, venue_name, **kwargs):
-        self.id = id
+        self.id = id # Using id from the meetup api, thus the name override.
         self.name = name
         self.time = time
         self.duration = duration
@@ -132,4 +133,4 @@ def putt():
     commit_post(post_filename, git_url, branch_name=config["posts_branch"])
 
 if __name__ == "__main__":
-    putt()
+    putt() # FORE!
